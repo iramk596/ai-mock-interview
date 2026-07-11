@@ -1,0 +1,9 @@
+export { default as Hero } from "./Hero";
+export { default as TrustedBy } from "./TrustedBy";
+export { default as Features } from "./Features";
+export { default as InterviewTypes } from "./InterviewTypes";
+export { default as HowItWorks } from "./HowItWorks";
+export { default as AIAdvantages } from "./AIAdvantages";
+export { default as Testimonials } from "./Testimonials";
+export { default as FAQ } from "./FAQ";
+export { default as CTA } from "./CTA";
