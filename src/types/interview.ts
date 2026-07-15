@@ -12,6 +12,14 @@ export type ExperienceLevel =
   | "2-5 Years"
   | "5+ Years";
 
+export type InterviewStatus =
+  | "initializing"
+  | "ready"
+  | "speaking"
+  | "listening"
+  | "processing"
+  | "completed";
+
 export interface InterviewConfig {
   role: string;
   skills: string;
@@ -24,6 +32,7 @@ export interface InterviewConfig {
 
 export interface InterviewQuestion {
   id: number;
+
   question: string;
 
   expectedAnswer?: string;
@@ -38,17 +47,17 @@ export interface InterviewQuestion {
 export interface InterviewSession {
   id: string;
 
-  status:
-    | "draft"
-    | "ready"
-    | "in_progress"
-    | "completed";
+  status: InterviewStatus;
 
   config: InterviewConfig;
 
   questions: InterviewQuestion[];
 
   currentQuestion: number;
+
+  transcript: string;
+
+  elapsedTime: number;
 
   score?: number;
 

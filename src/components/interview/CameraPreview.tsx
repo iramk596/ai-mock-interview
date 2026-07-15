@@ -1,32 +1,75 @@
 "use client";
 
-import Webcam from "react-webcam";
-import { Camera } from "lucide-react";
+import { useEffect } from "react";
+import { Camera, CameraOff, Loader2 } from "lucide-react";
+
+import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+
+import { useCamera } from "@/hooks/useCamera";
 
 export default function CameraPreview() {
+  const {
+    videoRef,
+    permission,
+    error,
+    isLoading,
+    startCamera,
+  } = useCamera();
+
+  useEffect(() => {
+    startCamera();
+  }, [startCamera]);
+
   return (
-    <div className="rounded-3xl border border-slate-700 bg-white/5 p-6 backdrop-blur-xl">
+    <Card className="relative overflow-hidden rounded-2xl border border-slate-700 bg-slate-900">
 
-      <div className="mb-4 flex items-center gap-2">
+      <div className="relative aspect-video">
 
-        <Camera className="h-5 w-5 text-indigo-400" />
+        {/* Live Camera */}
+        {permission === "granted" && (
+          <video
+            ref={videoRef}
+            autoPlay
+            playsInline
+            muted
+            className="h-full w-full object-cover"
+          />
+        )}
 
-        <h2 className="text-lg font-semibold text-white">
-          You
-        </h2>
+        {/* Loading */}
+        {isLoading && (
+          <div className="absolute inset-0 flex flex-col items-center justify-center bg-slate-950">
+            <Loader2 className="mb-4 h-10 w-10 animate-spin text-indigo-400" />
+
+            <p className="text-sm text-slate-300">
+              Starting camera...
+            </p>
+          </div>
+        )}
+
+        {/* Waiting / Permission Denied */}
+        {!isLoading && permission !== "granted" && (
+          <div className="absolute inset-0 flex flex-col items-center justify-center bg-slate-950">
+
+            <CameraOff className="mb-4 h-12 w-12 text-slate-500" />
+
+            <p className="mb-6 text-center text-sm text-slate-300">
+              {error || "Waiting for camera permission..."}
+            </p>
+
+            <Button
+              onClick={startCamera}
+              className="bg-gradient-to-r from-blue-600 via-indigo-600 to-violet-600 hover:opacity-90"
+            >
+              <Camera className="mr-2 h-4 w-4" />
+              Enable Camera
+            </Button>
+
+          </div>
+        )}
 
       </div>
-
-      <div className="overflow-hidden rounded-2xl">
-
-        <Webcam
-          audio={false}
-          mirrored
-          className="aspect-video w-full rounded-2xl object-cover"
-        />
-
-      </div>
-
-    </div>
+    </Card>
   );
 }
