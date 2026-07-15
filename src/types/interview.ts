@@ -6,6 +6,12 @@ export type InterviewType =
   | "Mixed"
   | "HR";
 
+export type ExperienceLevel =
+  | "Fresher"
+  | "0-2 Years"
+  | "2-5 Years"
+  | "5+ Years";
+
 export interface InterviewConfig {
   role: string;
   skills: string;
@@ -13,12 +19,20 @@ export interface InterviewConfig {
   type: InterviewType;
   questions: number;
   estimatedTime: number;
+  experience: ExperienceLevel;
 }
 
 export interface InterviewQuestion {
   id: number;
   question: string;
+
   expectedAnswer?: string;
+
+  userAnswer?: string;
+
+  score?: number;
+
+  feedback?: string;
 }
 
 export interface InterviewSession {

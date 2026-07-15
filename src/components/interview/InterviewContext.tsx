@@ -14,16 +14,10 @@ import {
 
 interface InterviewContextType {
   config: InterviewConfig;
-
-  setConfig: (
-    config: InterviewConfig
-  ) => void;
+  setConfig: (config: InterviewConfig) => void;
 
   questions: InterviewQuestion[];
-
-  setQuestions: (
-    questions: InterviewQuestion[]
-  ) => void;
+  setQuestions: (questions: InterviewQuestion[]) => void;
 }
 
 const defaultConfig: InterviewConfig = {
@@ -33,12 +27,11 @@ const defaultConfig: InterviewConfig = {
   type: "Technical",
   questions: 10,
   estimatedTime: 20,
+  experience: "Fresher",
 };
 
 const InterviewContext =
-  createContext<InterviewContextType | null>(
-    null
-  );
+  createContext<InterviewContextType | null>(null);
 
 export function InterviewProvider({
   children,
@@ -46,7 +39,7 @@ export function InterviewProvider({
   children: ReactNode;
 }) {
   const [config, setConfig] =
-    useState(defaultConfig);
+    useState<InterviewConfig>(defaultConfig);
 
   const [questions, setQuestions] =
     useState<InterviewQuestion[]>([]);
@@ -66,8 +59,7 @@ export function InterviewProvider({
 }
 
 export function useInterview() {
-  const context =
-    useContext(InterviewContext);
+  const context = useContext(InterviewContext);
 
   if (!context) {
     throw new Error(
