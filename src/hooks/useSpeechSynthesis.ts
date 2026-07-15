@@ -15,13 +15,10 @@ export function useSpeechSynthesis() {
 
     const utterance = new SpeechSynthesisUtterance(text);
 
-    utterance.rate = 1;
-
-    utterance.pitch = 1;
-
-    utterance.volume = 1;
-
     utterance.lang = "en-US";
+    utterance.rate = 0.95;
+    utterance.pitch = 1;
+    utterance.volume = 1;
 
     utterance.onstart = () => {
       setSpeaking(true);
@@ -30,7 +27,9 @@ export function useSpeechSynthesis() {
     utterance.onend = () => {
       setSpeaking(false);
 
-      onEnd?.();
+      if (onEnd) {
+        onEnd();
+      }
     };
 
     window.speechSynthesis.speak(utterance);
@@ -38,7 +37,6 @@ export function useSpeechSynthesis() {
 
   const stop = () => {
     window.speechSynthesis.cancel();
-
     setSpeaking(false);
   };
 
