@@ -102,7 +102,7 @@ export default function WelcomeCard() {
 
           <div className="mt-10 flex flex-wrap gap-5">
             <Link
-              href="#"
+              href="/interview"
               className="
               inline-flex
               items-center
@@ -125,7 +125,7 @@ export default function WelcomeCard() {
             </Link>
 
             <Link
-              href="#"
+              href="/coding"
               className="
               rounded-xl
               border

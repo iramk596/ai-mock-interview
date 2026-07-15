@@ -16,27 +16,10 @@ import QuestionCard from "@/components/interview/QuestionCard";
 import TranscriptCard from "@/components/interview/TranscriptCard";
 import InterviewControls from "@/components/interview/InterviewControls";
 
-import { InterviewQuestion } from "@/types/interview";
-
 export default function InterviewSessionPage() {
   const router = useRouter();
 
-  const { config } = useInterview();
-
-  const questions: InterviewQuestion[] = [
-    {
-      id: 1,
-      question: "Tell me about yourself.",
-    },
-    {
-      id: 2,
-      question: "Why do you want to join our company?",
-    },
-    {
-      id: 3,
-      question: "Explain one project you are most proud of.",
-    },
-  ];
+  const { config, questions } = useInterview();
 
   const session = useInterviewSession(questions);
 
@@ -48,20 +31,51 @@ export default function InterviewSessionPage() {
     if (!session.current) return;
 
     speech.stopListening();
+    speech.resetTranscript();
 
-    tts.speak(
-      session.current.question,
-      () => {
+    tts.speak(session.current.question, () => {
+      console.log("🤖 AI finished speaking");
+
+      setTimeout(() => {
+        console.log("🎤 Starting microphone...");
         speech.startListening();
-      }
-    );
-  }, [session.currentQuestion]);
+      }, 400);
+    });
+
+    return () => {
+      speech.stopListening();
+      tts.stop();
+    };
+  }, [session.current]);
 
   const formattedTime = `${String(
     Math.floor(session.elapsedTime / 60)
   ).padStart(2, "0")}:${String(
     session.elapsedTime % 60
   ).padStart(2, "0")}`;
+
+  if (questions.length === 0) {
+    return (
+      <main className="flex min-h-screen items-center justify-center bg-slate-950">
+        <div className="text-center">
+          <h1 className="mb-4 text-3xl font-bold text-white">
+            No Interview Found
+          </h1>
+
+          <p className="mb-6 text-slate-400">
+            Please generate an interview first.
+          </p>
+
+          <button
+            onClick={() => router.push("/dashboard")}
+            className="rounded-lg bg-indigo-600 px-6 py-3 text-white hover:bg-indigo-700"
+          >
+            Back to Dashboard
+          </button>
+        </div>
+      </main>
+    );
+  }
 
   return (
     <main className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-indigo-950 p-8">
@@ -94,11 +108,9 @@ export default function InterviewSessionPage() {
         <QuestionCard
           question={
             session.current?.question ??
-            "Loading..."
+            "Loading question..."
           }
-          questionNumber={
-            session.currentQuestion + 1
-          }
+          questionNumber={session.currentQuestion + 1}
           totalQuestions={questions.length}
         />
 
