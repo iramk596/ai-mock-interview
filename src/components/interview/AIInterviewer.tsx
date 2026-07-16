@@ -1,80 +1,121 @@
 "use client";
 
-import { Bot, Volume2, Mic, Brain } from "lucide-react";
-import { Card, CardContent } from "@/components/ui/card";
+import { Bot, Brain, Mic, Volume2 } from "lucide-react";
 
 interface AIInterviewerProps {
-  status: "idle" | "speaking" | "listening" | "thinking";
+  status:
+    | "idle"
+    | "thinking"
+    | "speaking"
+    | "listening"
+    | "processing";
 }
-
-const statusConfig = {
-  idle: {
-    text: "Ready to begin",
-    icon: Bot,
-    color: "text-slate-300",
-  },
-
-  speaking: {
-    text: "AI is speaking...",
-    icon: Volume2,
-    color: "text-blue-400",
-  },
-
-  listening: {
-    text: "Listening...",
-    icon: Mic,
-    color: "text-green-400",
-  },
-
-  thinking: {
-    text: "Analyzing your answer...",
-    icon: Brain,
-    color: "text-yellow-400",
-  },
-};
 
 export default function AIInterviewer({
   status,
 }: AIInterviewerProps) {
-  const current = statusConfig[status];
-  const StatusIcon = current.icon;
+  const getStatus = () => {
+    switch (status) {
+      case "speaking":
+        return {
+          title: "AI is speaking...",
+          description:
+            "Listen carefully to the interview question before answering.",
+          icon: <Volume2 className="h-12 w-12" />,
+          pulse: "animate-pulse",
+        };
+
+      case "listening":
+        return {
+          title: "Listening...",
+          description:
+            "Your response is being recorded and transcribed.",
+          icon: <Mic className="h-12 w-12" />,
+          pulse: "animate-ping",
+        };
+
+      case "processing":
+        return {
+          title: "Analyzing your answer...",
+          description:
+            "AI is evaluating your response and preparing feedback.",
+          icon: <Brain className="h-12 w-12" />,
+          pulse: "animate-pulse",
+        };
+
+      case "thinking":
+        return {
+          title: "Preparing next question...",
+          description:
+            "Please wait while the interviewer gets ready.",
+          icon: <Bot className="h-12 w-12" />,
+          pulse: "animate-bounce",
+        };
+
+      default:
+        return {
+          title: "AI Interviewer",
+          description:
+            "Waiting to begin the interview.",
+          icon: <Bot className="h-12 w-12" />,
+          pulse: "",
+        };
+    }
+  };
+
+  const current = getStatus();
 
   return (
-    <Card className="border-slate-700 bg-white/5 backdrop-blur-xl">
-      <CardContent className="flex flex-col items-center justify-center p-10">
+    <div className="flex h-full min-h-[380px] items-center justify-center rounded-2xl border border-slate-700 bg-white/5 p-8 backdrop-blur-xl">
 
-        {/* Avatar */}
+      <div className="text-center">
 
-        <div className="relative">
-          <div className="flex h-36 w-36 items-center justify-center rounded-full bg-gradient-to-br from-blue-500 via-indigo-500 to-violet-500 shadow-2xl">
-            <Bot className="h-16 w-16 text-white" />
-          </div>
-
-          {status === "speaking" && (
-            <span className="absolute inset-0 animate-ping rounded-full bg-indigo-500/30" />
-          )}
+        <div
+          className={`mx-auto mb-8 flex h-36 w-36 items-center justify-center rounded-full bg-gradient-to-br from-blue-500 to-violet-600 text-white shadow-2xl ${current.pulse}`}
+        >
+          {current.icon}
         </div>
 
-        {/* Status */}
+        <h2 className="text-3xl font-bold text-white">
+          {current.title}
+        </h2>
 
-        <div className="mt-8 text-center">
+        <p className="mx-auto mt-4 max-w-md text-slate-300">
+          {current.description}
+        </p>
 
-          <div className="mb-2 flex items-center justify-center gap-2">
-            <StatusIcon className={`h-5 w-5 ${current.color}`} />
+        {status === "speaking" && (
+          <div className="mt-8 flex justify-center gap-2">
+            <span className="h-3 w-3 animate-bounce rounded-full bg-blue-400" />
+            <span
+              className="h-3 w-3 animate-bounce rounded-full bg-blue-400"
+              style={{ animationDelay: "150ms" }}
+            />
+            <span
+              className="h-3 w-3 animate-bounce rounded-full bg-blue-400"
+              style={{ animationDelay: "300ms" }}
+            />
+          </div>
+        )}
 
-            <p className="text-lg font-semibold text-white">
-              {current.text}
+        {status === "listening" && (
+          <div className="mt-8">
+            <p className="font-semibold text-green-400">
+              🎤 Microphone Active
             </p>
           </div>
+        )}
 
-          <p className="max-w-sm text-sm text-slate-400">
-            Your AI interviewer will ask questions, listen to your
-            responses, and evaluate your performance in real time.
-          </p>
+        {status === "processing" && (
+          <div className="mt-8">
+            <p className="font-semibold text-indigo-400">
+              🤖 AI is generating your evaluation...
+            </p>
+          </div>
+        )}
 
-        </div>
+      </div>
 
-      </CardContent>
-    </Card>
+    </div>
   );
 }

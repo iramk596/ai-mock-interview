@@ -8,6 +8,7 @@ import { useInterview } from "@/components/interview/InterviewContext";
 import { useInterviewSession } from "@/hooks/useInterviewSession";
 import { useSpeechRecognition } from "@/hooks/useSpeechRecognition";
 import { useSpeechSynthesis } from "@/hooks/useSpeechSynthesis";
+import { useAnswerEvaluation } from "@/hooks/useAnswerEvaluation";
 
 import InterviewHeader from "@/components/interview/InterviewHeader";
 import CameraPreview from "@/components/interview/CameraPreview";
@@ -19,13 +20,20 @@ import InterviewControls from "@/components/interview/InterviewControls";
 export default function InterviewSessionPage() {
   const router = useRouter();
 
-  const { config, questions } = useInterview();
+  const {
+    config,
+    questions,
+    setAnswers,
+    setEvaluations,
+  } = useInterview();
 
   const session = useInterviewSession(questions);
 
   const speech = useSpeechRecognition();
 
   const tts = useSpeechSynthesis();
+
+  const evaluation = useAnswerEvaluation();
 
   useEffect(() => {
     if (!session.current) return;
@@ -34,10 +42,7 @@ export default function InterviewSessionPage() {
     speech.resetTranscript();
 
     tts.speak(session.current.question, () => {
-      console.log("🤖 AI finished speaking");
-
       setTimeout(() => {
-        console.log("🎤 Starting microphone...");
         speech.startListening();
       }, 400);
     });
@@ -77,6 +82,75 @@ export default function InterviewSessionPage() {
     );
   }
 
+  async function handleNext() {
+    speech.stopListening();
+
+    if (!session.current) return;
+
+    try {
+      const result = await evaluation.evaluate(
+        session.current.question,
+        speech.transcript
+      );
+
+      setAnswers((prev) => [
+        ...prev,
+        speech.transcript,
+      ]);
+
+      setEvaluations((prev) => [
+        ...prev,
+        result,
+      ]);
+
+      console.log("AI Evaluation:", result);
+
+      speech.resetTranscript();
+
+      if (
+        session.currentQuestion ===
+        questions.length - 1
+      ) {
+        router.push("/interview/report");
+      } else {
+        session.nextQuestion();
+      }
+    } catch (error) {
+      console.error(error);
+    }
+  }
+
+  function handleSkip() {
+    speech.stopListening();
+
+    setAnswers((prev) => [
+      ...prev,
+      "",
+    ]);
+
+    setEvaluations((prev) => [
+      ...prev,
+      {
+        score: 0,
+        feedback: "Question skipped.",
+        strengths: [],
+        improvements: [],
+        idealAnswer: "",
+      },
+    ]);
+
+    speech.resetTranscript();
+
+    if (
+      session.currentQuestion ===
+      questions.length - 1
+    ) {
+      router.push("/interview/report");
+    } else {
+      session.skipQuestion();
+    }
+  }
+
   return (
     <main className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-indigo-950 p-8">
       <div className="mx-auto max-w-7xl space-y-8">
@@ -95,7 +169,9 @@ export default function InterviewSessionPage() {
 
           <AIInterviewer
             status={
-              tts.speaking
+              evaluation.loading
+                ? "processing"
+                : tts.speaking
                 ? "speaking"
                 : speech.listening
                 ? "listening"
@@ -118,15 +194,15 @@ export default function InterviewSessionPage() {
           transcript={speech.transcript}
         />
 
+        {evaluation.loading && (
+          <div className="rounded-xl border border-indigo-500 bg-indigo-500/10 p-4 text-center text-indigo-200">
+            AI is evaluating your answer...
+          </div>
+        )}
+
         <InterviewControls
-          onSkip={() => {
-            speech.stopListening();
-            session.skipQuestion();
-          }}
-          onNext={() => {
-            speech.stopListening();
-            session.nextQuestion();
-          }}
+          onSkip={handleSkip}
+          onNext={handleNext}
         />
 
       </div>

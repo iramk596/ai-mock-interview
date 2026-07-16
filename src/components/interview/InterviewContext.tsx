@@ -5,6 +5,8 @@ import {
   useContext,
   useState,
   ReactNode,
+  Dispatch,
+  SetStateAction,
 } from "react";
 
 import {
@@ -12,12 +14,20 @@ import {
   InterviewQuestion,
 } from "@/types/interview";
 
+import { AnswerEvaluation } from "@/types/evaluation";
+
 interface InterviewContextType {
   config: InterviewConfig;
-  setConfig: (config: InterviewConfig) => void;
+  setConfig: Dispatch<SetStateAction<InterviewConfig>>;
 
   questions: InterviewQuestion[];
-  setQuestions: (questions: InterviewQuestion[]) => void;
+  setQuestions: Dispatch<SetStateAction<InterviewQuestion[]>>;
+
+  answers: string[];
+  setAnswers: Dispatch<SetStateAction<string[]>>;
+
+  evaluations: AnswerEvaluation[];
+  setEvaluations: Dispatch<SetStateAction<AnswerEvaluation[]>>;
 }
 
 const defaultConfig: InterviewConfig = {
@@ -44,13 +54,26 @@ export function InterviewProvider({
   const [questions, setQuestions] =
     useState<InterviewQuestion[]>([]);
 
+  const [answers, setAnswers] =
+    useState<string[]>([]);
+
+  const [evaluations, setEvaluations] =
+    useState<AnswerEvaluation[]>([]);
+
   return (
     <InterviewContext.Provider
       value={{
         config,
         setConfig,
+
         questions,
         setQuestions,
+
+        answers,
+        setAnswers,
+
+        evaluations,
+        setEvaluations,
       }}
     >
       {children}

@@ -29,25 +29,39 @@ Rules:
 `;
 
 export const ANSWER_EVALUATION_PROMPT = `
-You are an expert interviewer.
+You are a senior technical interviewer.
 
-Evaluate the candidate answer.
+Evaluate the candidate's answer.
 
-Return ONLY JSON.
+Consider:
 
-Format:
+- Technical accuracy
+- Completeness
+- Clarity
+- Confidence
+- Communication
+
+Return ONLY valid JSON.
 
 {
   "score": 8,
-  "feedback": "Detailed feedback",
+  "feedback": "Overall interview feedback.",
   "strengths": [
-    "..."
+    "Strength 1",
+    "Strength 2"
   ],
   "improvements": [
-    "..."
+    "Improvement 1",
+    "Improvement 2"
   ],
-  "idealAnswer": "..."
+  "idealAnswer": "A model answer."
 }
+
+Rules:
+
+- JSON only
+- No markdown
+- No explanation
 `;
 
 export const REPORT_GENERATION_PROMPT = `
