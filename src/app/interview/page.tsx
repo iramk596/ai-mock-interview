@@ -8,14 +8,29 @@ import { useInterview } from "@/components/interview/InterviewContext";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 
+import SkillsMultiSelect from "@/components/interview/config/SkillsMultiSelect";
+import QuestionSelect from "@/components/interview/config/QuestionSelect";
+
+import { ROLES } from "@/constants/roles";
+
 export default function InterviewPage() {
   const router = useRouter();
 
-  const { config, setConfig } = useInterview();
+  const {
+    config,
+    setConfig,
+    setQuestions,
+  } = useInterview();
 
-  const [form, setForm] = useState(config);
+  const [loading, setLoading] =
+    useState(false);
 
-  function update<K extends keyof typeof form>(
+  const [form, setForm] =
+    useState(config);
+
+  function update<
+    K extends keyof typeof form
+  >(
     key: K,
     value: (typeof form)[K]
   ) {
@@ -25,10 +40,70 @@ export default function InterviewPage() {
     }));
   }
 
-  function handleContinue() {
-    setConfig(form);
+  async function handleContinue() {
+    try {
+      if (!form.role) {
+        alert("Please select a role.");
+        return;
+      }
 
-    router.push("/interview/ready");
+      if (!form.skills) {
+        alert("Please select skills.");
+        return;
+      }
+
+      setLoading(true);
+
+      const updatedConfig = {
+        ...form,
+        estimatedTime:
+          form.questions * 2,
+      };
+
+      setConfig(updatedConfig);
+
+      const response =
+        await fetch(
+          "/api/interview/generate",
+          {
+            method: "POST",
+
+            headers: {
+              "Content-Type":
+                "application/json",
+            },
+
+            body: JSON.stringify(
+              updatedConfig
+            ),
+          }
+        );
+
+      const data =
+        await response.json();
+
+      if (!data.success) {
+        alert(data.message);
+
+        setLoading(false);
+
+        return;
+      }
+
+      setQuestions(data.data);
+
+      router.push(
+        "/interview/ready"
+      );
+    } catch (error) {
+      console.error(error);
+
+      alert(
+        "Failed to generate interview."
+      );
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (
@@ -60,35 +135,49 @@ export default function InterviewPage() {
                 Role
               </label>
 
-              <input
+              <select
                 value={form.role}
                 onChange={(e) =>
-                  update("role", e.target.value)
+                  update(
+                    "role",
+                    e.target.value
+                  )
                 }
-                placeholder="DevOps Engineer"
-                className="w-full rounded-lg border border-slate-700 bg-slate-800 px-4 py-3 text-white outline-none"
-              />
+                className="w-full rounded-lg border border-slate-700 bg-slate-800 px-4 py-3 text-white"
+              >
+                <option value="">
+                  Select Role
+                </option>
+
+                {ROLES.map((role) => (
+                  <option
+                    key={role}
+                    value={role}
+                  >
+                    {role}
+                  </option>
+                ))}
+              </select>
 
             </div>
 
             {/* Skills */}
 
-            <div>
-
-              <label className="mb-2 block text-sm text-slate-300">
-                Skills (comma separated)
-              </label>
-
-              <input
-                value={form.skills}
-                onChange={(e) =>
-                  update("skills", e.target.value)
-                }
-                placeholder="Docker,Kubernetes,AWS"
-                className="w-full rounded-lg border border-slate-700 bg-slate-800 px-4 py-3 text-white outline-none"
-              />
-
-            </div>
+            <SkillsMultiSelect
+              value={
+                form.skills
+                  ? form.skills.split(",")
+                  : []
+              }
+              onChange={(
+                skills
+              ) =>
+                update(
+                  "skills",
+                  skills.join(",")
+                )
+              }
+            />
 
             {/* Difficulty */}
 
@@ -99,18 +188,29 @@ export default function InterviewPage() {
               </label>
 
               <select
-                value={form.difficulty}
+                value={
+                  form.difficulty
+                }
                 onChange={(e) =>
                   update(
                     "difficulty",
-                    e.target.value as typeof form.difficulty
+                    e.target
+                      .value as typeof form.difficulty
                   )
                 }
                 className="w-full rounded-lg border border-slate-700 bg-slate-800 px-4 py-3 text-white"
               >
-                <option>Easy</option>
-                <option>Medium</option>
-                <option>Hard</option>
+                <option>
+                  Easy
+                </option>
+
+                <option>
+                  Medium
+                </option>
+
+                <option>
+                  Hard
+                </option>
               </select>
 
             </div>
@@ -128,97 +228,88 @@ export default function InterviewPage() {
                 onChange={(e) =>
                   update(
                     "type",
-                    e.target.value as typeof form.type
+                    e.target
+                      .value as typeof form.type
                   )
                 }
                 className="w-full rounded-lg border border-slate-700 bg-slate-800 px-4 py-3 text-white"
               >
-                <option>Technical</option>
-                <option>Behavioral</option>
-                <option>Mixed</option>
-                <option>HR</option>
+                <option>
+                  Technical
+                </option>
+
+                <option>
+                  Behavioral
+                </option>
+
+                <option>
+                  Mixed
+                </option>
+
+                <option>
+                  HR
+                </option>
               </select>
 
             </div>
 
             {/* Experience */}
-
             <div>
+  <label className="mb-2 block text-sm text-slate-300">
+    Experience
+  </label>
 
-              <label className="mb-2 block text-sm text-slate-300">
-                Experience
-              </label>
+  <select
+    value={form.experience}
+    onChange={(e) =>
+      update(
+        "experience",
+        e.target.value as typeof form.experience
+      )
+    }
+    className="w-full rounded-lg border border-slate-700 bg-slate-800 px-4 py-3 text-white"
+  >
+    <option>Fresher</option>
+    <option>0-2 Years</option>
+    <option>2-5 Years</option>
+    <option>5+ Years</option>
+  </select>
+</div>
 
-              <select
-                value={form.experience}
-                onChange={(e) =>
-                  update(
-                    "experience",
-                    e.target.value as typeof form.experience
-                  )
-                }
-                className="w-full rounded-lg border border-slate-700 bg-slate-800 px-4 py-3 text-white"
-              >
-                <option>Fresher</option>
-                <option>0-2 Years</option>
-                <option>2-5 Years</option>
-                <option>5+ Years</option>
-              </select>
+{/* Questions */}
 
-            </div>
+<QuestionSelect
+  value={form.questions}
+  onChange={(value) =>
+    update("questions", value)
+  }
+/>
 
-            {/* Questions */}
+{/* Estimated Time */}
 
-            <div>
+<div>
 
-              <label className="mb-2 block text-sm text-slate-300">
-                Number of Questions
-              </label>
+  <label className="mb-2 block text-sm text-slate-300">
+    Estimated Duration (minutes)
+  </label>
 
-              <input
-                type="number"
-                min={1}
-                max={20}
-                value={form.questions}
-                onChange={(e) =>
-                  update(
-                    "questions",
-                    Number(e.target.value)
-                  )
-                }
-                className="w-full rounded-lg border border-slate-700 bg-slate-800 px-4 py-3 text-white"
-              />
+  <input
+  readOnly
+  value={`${form.questions * 2} Minutes`}
+  className="w-full rounded-lg border border-slate-700 bg-slate-800 px-4 py-3 text-white"
+/>
 
-            </div>
+</div>
 
-            {/* Duration */}
-
-            <div>
-
-              <label className="mb-2 block text-sm text-slate-300">
-                Estimated Duration (minutes)
-              </label>
-
-              <input
-                type="number"
-                value={form.estimatedTime}
-                onChange={(e) =>
-                  update(
-                    "estimatedTime",
-                    Number(e.target.value)
-                  )
-                }
-                className="w-full rounded-lg border border-slate-700 bg-slate-800 px-4 py-3 text-white"
-              />
-
-            </div>
-
-            <Button
-              onClick={handleContinue}
-              className="h-12 w-full bg-indigo-600 hover:bg-indigo-700"
-            >
-              Continue
-            </Button>
+<Button
+  disabled={loading}
+  onClick={handleContinue}
+  className="h-12 w-full bg-indigo-600 hover:bg-indigo-700"
+>
+  {loading
+    ? "Generating Interview..."
+    : "Generate Interview"}
+</Button>
 
           </CardContent>
 

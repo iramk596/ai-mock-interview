@@ -23,6 +23,8 @@ export default function InterviewSessionPage() {
   const {
     config,
     questions,
+    answers,
+    evaluations,
     setAnswers,
     setEvaluations,
   } = useInterview();
@@ -93,24 +95,30 @@ export default function InterviewSessionPage() {
         speech.transcript
       );
 
-      setAnswers((prev) => [
-        ...prev,
-        speech.transcript,
-      ]);
+      const finalAnswers = [...answers, speech.transcript];
+      const finalEvaluations = [...evaluations, result];
 
-      setEvaluations((prev) => [
-        ...prev,
-        result,
-      ]);
+      setAnswers(finalAnswers);
+      setEvaluations(finalEvaluations);
 
       console.log("AI Evaluation:", result);
 
       speech.resetTranscript();
 
-      if (
-        session.currentQuestion ===
-        questions.length - 1
-      ) {
+      if (session.currentQuestion === questions.length - 1) {
+        await fetch("/api/interview/save", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            config,
+            questions,
+            answers: finalAnswers,
+            evaluations: finalEvaluations,
+          }),
+        });
+
         router.push("/interview/report");
       } else {
         session.nextQuestion();
@@ -120,31 +128,42 @@ export default function InterviewSessionPage() {
     }
   }
 
-  function handleSkip() {
+  async function handleSkip() {
     speech.stopListening();
 
-    setAnswers((prev) => [
-      ...prev,
-      "",
-    ]);
+    const skippedEvaluation = {
+      score: 0,
+      feedback: "Question skipped.",
+      strengths: [],
+      improvements: [],
+      idealAnswer: "",
+    };
 
-    setEvaluations((prev) => [
-      ...prev,
-      {
-        score: 0,
-        feedback: "Question skipped.",
-        strengths: [],
-        improvements: [],
-        idealAnswer: "",
-      },
-    ]);
+    const finalAnswers = [...answers, ""];
+    const finalEvaluations = [
+      ...evaluations,
+      skippedEvaluation,
+    ];
+
+    setAnswers(finalAnswers);
+    setEvaluations(finalEvaluations);
 
     speech.resetTranscript();
 
-    if (
-      session.currentQuestion ===
-      questions.length - 1
-    ) {
+    if (session.currentQuestion === questions.length - 1) {
+      await fetch("/api/interview/save", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          config,
+          questions,
+          answers: finalAnswers,
+          evaluations: finalEvaluations,
+        }),
+      });
+
       router.push("/interview/report");
     } else {
       session.skipQuestion();
