@@ -1,5 +1,6 @@
 "use client";
 
+import { BookOpen } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
@@ -21,6 +22,11 @@ const menuItems = [
     name: "Interviews",
     href: "/dashboard/interviews",
     icon: Mic,
+  },
+  {
+  title: "DSA Sheet",
+  href: "/dashboard/dsa-sheet",
+  icon: BookOpen,
   },
   {
     name: "Coding",
