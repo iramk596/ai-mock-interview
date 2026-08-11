@@ -17,21 +17,26 @@ model Interview {
   experience     String
   score          Float
   totalQuestions Int
-  createdAt      DateTime @default(now())
 
-  questions Question[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime?
+
+  questions InterviewQuestion[]
 }
 
-model Question {
-  id             String @id @default(cuid())
-  interviewId    String
-  question       String
-  answer         String
-  score          Float
-  feedback       String
-  strengths      Json
-  improvements   Json
-  idealAnswer    String
+model InterviewQuestion {
+  id String @id @default(cuid())
 
-  interview Interview @relation(fields: [interviewId], references: [id], onDelete: Cascade)
+  interviewId String
+  interview   Interview @relation(fields: [interviewId], references: [id], onDelete: Cascade)
+
+  question     String
+  answer       String
+  score        Float
+  feedback     String
+  strengths    String[]
+  improvements String[]
+  idealAnswer  String
+
+  createdAt DateTime @default(now())
 }

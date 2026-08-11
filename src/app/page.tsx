@@ -14,6 +14,7 @@ export default function Home() {
   return (
     <>
       <Navbar />
+
       <main>
         <Hero />
         <TrustedBy />
@@ -25,6 +26,7 @@ export default function Home() {
         <FAQ />
         <CTA />
       </main>
+
       <Footer />
     </>
   );

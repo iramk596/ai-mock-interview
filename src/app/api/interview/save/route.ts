@@ -1,5 +1,5 @@
-import { auth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
+import { auth } from "@clerk/nextjs/server";
 
 import { saveInterview } from "@/services/database/interview.service";
 
@@ -7,28 +7,20 @@ export async function POST(req: Request) {
   try {
     console.log("========== SAVE API CALLED ==========");
 
-    const authData = await auth();
+    const { userId } = await auth();
 
-    console.log("AUTH DATA:", authData);
-
-    const { userId } = authData;
+    console.log("Authenticated user:", userId);
 
     if (!userId) {
-      console.log("No authenticated user found.");
-
       return NextResponse.json(
-        {
-          error: "Unauthorized",
-        },
-        {
-          status: 401,
-        }
+        { success: false, error: "Unauthorized" },
+        { status: 401 }
       );
     }
 
     const body = await req.json();
 
-    console.log("Received body:", body);
+    console.log("Request body received");
 
     const interview = await saveInterview({
       userId,
@@ -38,30 +30,24 @@ export async function POST(req: Request) {
       evaluations: body.evaluations,
     });
 
-    console.log("Interview saved successfully.");
+    console.log(
+      "Interview saved successfully:",
+      interview.id
+    );
 
     return NextResponse.json({
       success: true,
-      data: interview,
+      interviewId: interview.id,
     });
   } catch (error) {
-    console.error("========== SAVE API ERROR ==========");
-
-    if (error instanceof Error) {
-      console.error("Message:", error.message);
-      console.error("Stack:", error.stack);
-    } else {
-      console.error(error);
-    }
+    console.error("SAVE API ERROR:", error);
 
     return NextResponse.json(
       {
         success: false,
-        error: "Failed to save interview.",
+        error: String(error),
       },
-      {
-        status: 500,
-      }
+      { status: 500 }
     );
   }
 }
