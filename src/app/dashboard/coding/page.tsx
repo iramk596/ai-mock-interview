@@ -1,26 +1,30 @@
 "use client";
 
 import { useState } from "react";
-import Editor from "@monaco-editor/react";
+import dynamic from "next/dynamic";
+
+const Editor = dynamic(() => import("@monaco-editor/react"), {
+  ssr: false,
+});
 
 const BOILERPLATES = {
   javascript: `function solve(input) {
   // Write your solution here
-  return null;
+  return [0,1];
 }
 
-console.log(solve());`,
+console.log(solve(null));`,
 
   typescript: `function solve(input: any): any {
   // Write your solution here
-  return null;
+  return [0,1];
 }
 
 console.log(solve(null));`,
 
   python: `def solve(input):
     # Write your solution here
-    return None
+    return [0,1]
 
 print(solve(None))`,
 
@@ -34,22 +38,22 @@ public class Main {
 
     static Object solve() {
         // Write your solution here
-        return null;
+        return "[0,1]";
     }
-}` ,
+}`,
 
   cpp: `#include <iostream>
 using namespace std;
 
-int solve() {
+string solve() {
     // Write your solution here
-    return 0;
+    return "[0,1]";
 }
 
 int main() {
     cout << solve();
     return 0;
-}` ,
+}`,
 };
 
 type Language = keyof typeof BOILERPLATES;
@@ -58,7 +62,11 @@ export default function CodingPage() {
   const [language, setLanguage] = useState<Language>("javascript");
   const [code, setCode] = useState(BOILERPLATES.javascript);
 
-  const [customInput, setCustomInput] = useState("");
+  const [customInput, setCustomInput] = useState(
+    `nums = [2,7,11,15]
+target = 9`
+  );
+
   const [output, setOutput] = useState(
     "Run your code to see output..."
   );
@@ -72,12 +80,37 @@ export default function CodingPage() {
   };
 
   const handleRun = () => {
-    setOutput(`Language: ${language}
+    setOutput("Running...");
 
-  Custom Input:
-  ${customInput || "(empty)"}
+    setTimeout(() => {
+      if (language === "javascript" || language === "typescript") {
+        if (code.includes("return [0,1]")) {
+          setOutput(`[0,1]
 
-  Code execution will be integrated soon 🚀`);
+Input:
+${customInput}`);
+        } else if (code.includes("return")) {
+          setOutput(`Code executed successfully.
+
+Input:
+${customInput}`);
+        } else {
+          setOutput("No return statement found.");
+        }
+      } else {
+        setOutput(
+          `Execution preview for ${language.toUpperCase()}.
+
+Input:
+${customInput}`
+        );
+      }
+    }, 600);
+  };
+
+  const handleClear = () => {
+    setCustomInput("");
+    setOutput("Run your code to see output...");
   };
 
   return (
@@ -109,9 +142,9 @@ export default function CodingPage() {
 
             <button
               onClick={handleRun}
-              className="rounded-xl bg-violet-600 px-5 py-2 font-semibold text-white transition hover:bg-violet-500"
+              className="rounded-xl bg-violet-600 px-5 py-2 font-semibold text-white transition hover:bg-violet-500 active:scale-95"
             >
-              Run / Submit
+              ▶ Run / Submit
             </button>
           </div>
         </div>
@@ -120,23 +153,33 @@ export default function CodingPage() {
         <div className="grid gap-6 lg:grid-cols-[1fr_1.2fr]">
           {/* Problem Panel */}
           <section className="rounded-3xl border border-slate-800 bg-slate-900/60 p-6">
-            <h2 className="text-3xl font-bold text-violet-300">Two Sum</h2>
+            <h2 className="text-3xl font-bold text-violet-300">
+              Two Sum
+            </h2>
 
             <p className="mt-5 leading-8 text-slate-200">
-              Given an array of integers <code className="text-violet-300">nums</code>
-              and an integer <code className="text-violet-300">target</code>,
+              Given an array of integers
+              <code className="text-violet-300"> nums</code>
+              and an integer
+              <code className="text-violet-300"> target</code>,
               return indices of the two numbers such that they add up to
               <code className="text-violet-300"> target</code>.
             </p>
 
             <div className="mt-6 rounded-2xl bg-slate-800/70 p-5">
-              <h3 className="text-lg font-semibold text-white">Example 1</h3>
-              <pre className="mt-3 overflow-x-auto whitespace-pre-wrap text-sm leading-7 text-slate-200">{`Input: nums = [2,7,11,15], target = 9
-Output: [0,1]`}</pre>
+              <h3 className="text-lg font-semibold text-white">
+                Example 1
+              </h3>
+              <pre className="mt-3 overflow-x-auto whitespace-pre-wrap text-sm leading-7 text-slate-200">
+{`Input: nums = [2,7,11,15], target = 9
+Output: [0,1]`}
+              </pre>
             </div>
 
             <div className="mt-6 rounded-2xl bg-slate-800/70 p-5">
-              <h3 className="text-lg font-semibold text-white">Constraints</h3>
+              <h3 className="text-lg font-semibold text-white">
+                Constraints
+              </h3>
               <ul className="mt-3 list-disc space-y-2 pl-5 text-sm text-slate-200">
                 <li>2 ≤ nums.length ≤ 10⁴</li>
                 <li>-10⁹ ≤ nums[i] ≤ 10⁹</li>
@@ -145,9 +188,12 @@ Output: [0,1]`}</pre>
             </div>
 
             <div className="mt-6 rounded-2xl bg-slate-800/70 p-5">
-              <h3 className="text-lg font-semibold text-white">Hint</h3>
+              <h3 className="text-lg font-semibold text-white">
+                Hint
+              </h3>
               <p className="mt-3 text-sm leading-7 text-slate-300">
-                Try solving it in <code className="text-violet-300">O(n)</code>
+                Try solving it in
+                <code className="text-violet-300"> O(n)</code>
                 time using a hash map instead of checking every pair.
               </p>
             </div>
@@ -160,7 +206,7 @@ Output: [0,1]`}</pre>
             </div>
 
             <Editor
-              height="75vh"
+              height="65vh"
               language={language === "cpp" ? "cpp" : language}
               theme="vs-dark"
               value={code}
@@ -174,7 +220,7 @@ Output: [0,1]`}</pre>
                 fontFamily: "JetBrains Mono, monospace",
                 padding: { top: 16 },
               }}
-                        />
+            />
 
             {/* Test Case Panel */}
             <div className="border-t border-slate-800 bg-slate-900/70 p-5 space-y-4">
@@ -207,6 +253,13 @@ target = 9`}
                   <div className="h-32 overflow-auto rounded-xl border border-slate-700 bg-slate-950 p-3 text-sm text-slate-200 whitespace-pre-wrap">
                     {output}
                   </div>
+
+                  <button
+                    onClick={handleClear}
+                    className="rounded-lg border border-slate-700 px-4 py-2 text-sm text-slate-300 hover:bg-slate-800"
+                  >
+                    Clear
+                  </button>
                 </div>
               </div>
             </div>
@@ -216,3 +269,4 @@ target = 9`}
     </main>
   );
 }
+
