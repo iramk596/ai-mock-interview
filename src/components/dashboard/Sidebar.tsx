@@ -1,16 +1,16 @@
 "use client";
 
-import { BookOpen } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { UserButton } from "@clerk/nextjs";
 import {
   LayoutDashboard,
   Mic,
+  BookOpen,
   Code2,
   BarChart3,
   Settings,
 } from "lucide-react";
-import { UserButton } from "@clerk/nextjs";
 
 const menuItems = [
   {
@@ -24,9 +24,9 @@ const menuItems = [
     icon: Mic,
   },
   {
-  title: "DSA Sheet",
-  href: "/dashboard/dsa-sheet",
-  icon: BookOpen,
+    name: "DSA Sheet",
+    href: "/dashboard/dsa-sheet",
+    icon: BookOpen,
   },
   {
     name: "Coding",
@@ -50,26 +50,30 @@ export default function Sidebar() {
 
   return (
     <aside className="hidden md:flex w-64 min-h-screen border-r bg-white flex-col">
-      <div className="p-6 border-b">
+      <div className="border-b p-6">
         <h1 className="text-xl font-bold">AI Mock Interview</h1>
       </div>
 
-      <nav className="flex-1 p-4 space-y-2">
+      <nav className="flex-1 space-y-2 p-4">
         {menuItems.map((item) => {
           const Icon = item.icon;
+
+          const isActive =
+            pathname === item.href ||
+            pathname.startsWith(`${item.href}/`);
 
           return (
             <Link
               key={item.href}
               href={item.href}
               className={`flex items-center gap-3 rounded-lg px-4 py-3 transition ${
-                pathname === item.href
+                isActive
                   ? "bg-blue-600 text-white"
-                  : "hover:bg-slate-100 text-slate-700"
+                  : "text-slate-700 hover:bg-slate-100"
               }`}
             >
               <Icon size={18} />
-              {item.name}
+              <span>{item.name}</span>
             </Link>
           );
         })}
@@ -81,3 +85,4 @@ export default function Sidebar() {
     </aside>
   );
 }
+
