@@ -1,116 +1,45 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import dynamic from "next/dynamic";
+import { useSearchParams } from "next/navigation";
+import { CODING_PROBLEMS } from "@/data/coding-problems";
 
 const Editor = dynamic(() => import("@monaco-editor/react"), {
   ssr: false,
 });
 
-const BOILERPLATES = {
-  javascript: `function solve(input) {
-  // Write your solution here
-  return [0,1];
-}
-
-console.log(solve(null));`,
-
-  typescript: `function solve(input: any): any {
-  // Write your solution here
-  return [0,1];
-}
-
-console.log(solve(null));`,
-
-  python: `def solve(input):
-    # Write your solution here
-    return [0,1]
-
-print(solve(None))`,
-
-  java: `import java.util.*;
-
-public class Main {
-    public static void main(String[] args) {
-        Scanner sc = new Scanner(System.in);
-        System.out.println(solve());
-    }
-
-    static Object solve() {
-        // Write your solution here
-        return "[0,1]";
-    }
-}`,
-
-  cpp: `#include <iostream>
-using namespace std;
-
-string solve() {
-    // Write your solution here
-    return "[0,1]";
-}
-
-int main() {
-    cout << solve();
-    return 0;
-}`,
-};
-
-type Language = keyof typeof BOILERPLATES;
+type Language = "javascript" | "typescript" | "python" | "java" | "cpp";
 
 export default function CodingPage() {
-  const [language, setLanguage] = useState<Language>("javascript");
-  const [code, setCode] = useState(BOILERPLATES.javascript);
+  const searchParams = useSearchParams();
+  const problemId = searchParams.get("problem");
 
+  const currentProblem = useMemo(() => {
+    return (
+      CODING_PROBLEMS.find((p) => p.id === problemId) ??
+      CODING_PROBLEMS[0]
+    );
+  }, [problemId]);
+
+  const [language, setLanguage] = useState<Language>("typescript");
+  const [code, setCode] = useState(currentProblem.starterCode);
   const [customInput, setCustomInput] = useState(
-    `nums = [2,7,11,15]
-target = 9`
+    currentProblem.exampleInput || ""
   );
-
   const [output, setOutput] = useState(
     "Run your code to see output..."
   );
 
-  const handleLanguageChange = (
-    e: React.ChangeEvent<HTMLSelectElement>
-  ) => {
-    const lang = e.target.value as Language;
-    setLanguage(lang);
-    setCode(BOILERPLATES[lang]);
-  };
-
   const handleRun = () => {
-    setOutput("Running...");
-
-    setTimeout(() => {
-      if (language === "javascript" || language === "typescript") {
-        if (code.includes("return [0,1]")) {
-          setOutput(`[0,1]
+    setOutput(
+      `Execution preview for ${currentProblem.title}
 
 Input:
-${customInput}`);
-        } else if (code.includes("return")) {
-          setOutput(`Code executed successfully.
+${customInput}
 
-Input:
-${customInput}`);
-        } else {
-          setOutput("No return statement found.");
-        }
-      } else {
-        setOutput(
-          `Execution preview for ${language.toUpperCase()}.
-
-Input:
-${customInput}`
-        );
-      }
-    }, 600);
-  };
-
-  const handleClear = () => {
-    setCustomInput("");
-    setOutput("Run your code to see output...");
+Code executed successfully.`
+    );
   };
 
   return (
@@ -130,7 +59,7 @@ ${customInput}`
           <div className="flex items-center gap-3">
             <select
               value={language}
-              onChange={handleLanguageChange}
+              onChange={(e) => setLanguage(e.target.value as Language)}
               className="rounded-xl border border-slate-700 bg-slate-900 px-4 py-2 text-white outline-none focus:border-violet-500"
             >
               <option value="javascript">JavaScript</option>
@@ -154,25 +83,28 @@ ${customInput}`
           {/* Problem Panel */}
           <section className="rounded-3xl border border-slate-800 bg-slate-900/60 p-6">
             <h2 className="text-3xl font-bold text-violet-300">
-              Two Sum
+              {currentProblem.title}
             </h2>
 
+            <p className="mt-2 text-sm text-slate-400">
+              Difficulty: {currentProblem.difficulty}
+            </p>
+
             <p className="mt-5 leading-8 text-slate-200">
-              Given an array of integers
-              <code className="text-violet-300"> nums</code>
-              and an integer
-              <code className="text-violet-300"> target</code>,
-              return indices of the two numbers such that they add up to
-              <code className="text-violet-300"> target</code>.
+              {currentProblem.description}
             </p>
 
             <div className="mt-6 rounded-2xl bg-slate-800/70 p-5">
               <h3 className="text-lg font-semibold text-white">
-                Example 1
+                Example
               </h3>
+
               <pre className="mt-3 overflow-x-auto whitespace-pre-wrap text-sm leading-7 text-slate-200">
-{`Input: nums = [2,7,11,15], target = 9
-Output: [0,1]`}
+{`Input:
+${currentProblem.exampleInput}
+
+Output:
+${currentProblem.exampleOutput}`}
               </pre>
             </div>
 
@@ -180,22 +112,12 @@ Output: [0,1]`}
               <h3 className="text-lg font-semibold text-white">
                 Constraints
               </h3>
-              <ul className="mt-3 list-disc space-y-2 pl-5 text-sm text-slate-200">
-                <li>2 ≤ nums.length ≤ 10⁴</li>
-                <li>-10⁹ ≤ nums[i] ≤ 10⁹</li>
-                <li>Exactly one valid answer exists.</li>
-              </ul>
-            </div>
 
-            <div className="mt-6 rounded-2xl bg-slate-800/70 p-5">
-              <h3 className="text-lg font-semibold text-white">
-                Hint
-              </h3>
-              <p className="mt-3 text-sm leading-7 text-slate-300">
-                Try solving it in
-                <code className="text-violet-300"> O(n)</code>
-                time using a hash map instead of checking every pair.
-              </p>
+              <ul className="mt-3 list-disc space-y-2 pl-5 text-sm text-slate-200">
+                <li>Use an optimal solution whenever possible.</li>
+                <li>Avoid unnecessary nested loops.</li>
+                <li>Think about time and space complexity.</li>
+              </ul>
             </div>
           </section>
 
@@ -223,13 +145,12 @@ Output: [0,1]`}
             />
 
             {/* Test Case Panel */}
-            <div className="border-t border-slate-800 bg-slate-900/70 p-5 space-y-4">
+            <div className="space-y-4 border-t border-slate-800 bg-slate-900/70 p-5">
               <h3 className="text-lg font-semibold text-white">
                 Custom Test Case
               </h3>
 
               <div className="grid gap-4 md:grid-cols-2">
-                {/* Input */}
                 <div className="space-y-2">
                   <p className="text-sm font-medium text-slate-300">
                     Input
@@ -238,28 +159,18 @@ Output: [0,1]`}
                   <textarea
                     value={customInput}
                     onChange={(e) => setCustomInput(e.target.value)}
-                    placeholder={`nums = [2,7,11,15]
-target = 9`}
                     className="h-32 w-full rounded-xl border border-slate-700 bg-slate-950 p-3 text-sm text-white outline-none focus:border-violet-500"
                   />
                 </div>
 
-                {/* Output */}
                 <div className="space-y-2">
                   <p className="text-sm font-medium text-slate-300">
                     Output
                   </p>
 
-                  <div className="h-32 overflow-auto rounded-xl border border-slate-700 bg-slate-950 p-3 text-sm text-slate-200 whitespace-pre-wrap">
+                  <div className="h-32 overflow-auto whitespace-pre-wrap rounded-xl border border-slate-700 bg-slate-950 p-3 text-sm text-slate-200">
                     {output}
                   </div>
-
-                  <button
-                    onClick={handleClear}
-                    className="rounded-lg border border-slate-700 px-4 py-2 text-sm text-slate-300 hover:bg-slate-800"
-                  >
-                    Clear
-                  </button>
                 </div>
               </div>
             </div>
@@ -269,4 +180,3 @@ target = 9`}
     </main>
   );
 }
-

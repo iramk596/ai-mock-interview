@@ -7,7 +7,7 @@ const Editor = dynamic(() => import("@monaco-editor/react"), {
   ssr: false,
 });
 
-type Props = {
+type MonacoCodeEditorProps = {
   initialCode: string;
   language?: string;
 };
@@ -15,7 +15,7 @@ type Props = {
 export default function MonacoCodeEditor({
   initialCode,
   language = "typescript",
-}: Props) {
+}: MonacoCodeEditorProps) {
   const [code, setCode] = useState(initialCode);
 
   return (
@@ -26,10 +26,12 @@ export default function MonacoCodeEditor({
       value={code}
       onChange={(value) => setCode(value || "")}
       options={{
-        minimap: { enabled: false },
         fontSize: 14,
+        minimap: { enabled: false },
         automaticLayout: true,
         wordWrap: "on",
+        scrollBeyondLastLine: false,
+        fontFamily: "JetBrains Mono, monospace",
       }}
     />
   );
