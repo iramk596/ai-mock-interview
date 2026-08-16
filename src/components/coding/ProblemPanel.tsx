@@ -1,42 +1,68 @@
-export default function ProblemPanel() {
+import type { CodingProblem } from "@/data/coding-problems/types";
+
+type ProblemPanelProps = {
+  problem: CodingProblem;
+  patternName: string;
+};
+
+const difficultyStyles = {
+  Easy: "bg-emerald-500/15 text-emerald-300 ring-emerald-400/30",
+  Medium: "bg-amber-500/15 text-amber-300 ring-amber-400/30",
+  Hard: "bg-rose-500/15 text-rose-300 ring-rose-400/30",
+} as const;
+
+export default function ProblemPanel({
+  problem,
+  patternName,
+}: ProblemPanelProps) {
   return (
-    <div className="h-full overflow-y-auto rounded-xl border border-slate-700 bg-slate-900/60 p-6 text-white">
-      <h1 className="text-2xl font-bold text-indigo-300">
-        Two Sum
-      </h1>
-
-      <p className="mt-4 text-slate-300 leading-7">
-        Given an array of integers <code>nums</code> and an integer
-        <code>target</code>, return indices of the two numbers such that they
-        add up to <code>target</code>.
-      </p>
-
-      <div className="mt-6 space-y-4">
-        <div className="rounded-lg bg-slate-800 p-4">
-          <p className="font-semibold text-slate-200">Example 1</p>
-          <pre className="mt-2 whitespace-pre-wrap text-sm text-slate-300">
-{`Input: nums = [2,7,11,15], target = 9
-Output: [0,1]`}
-          </pre>
+    <section className="flex h-full min-h-0 flex-col overflow-hidden rounded-2xl border border-slate-800 bg-slate-900/70">
+      <div className="border-b border-slate-800 px-5 py-4">
+        <div className="flex flex-wrap items-center gap-2">
+          <span
+            className={`rounded-full px-2.5 py-1 text-xs font-semibold ring-1 ${difficultyStyles[problem.difficulty]}`}
+          >
+            {problem.difficulty}
+          </span>
+          <span className="rounded-full bg-slate-800 px-2.5 py-1 text-xs font-medium text-slate-300">
+            {patternName}
+          </span>
         </div>
+        <h1 className="mt-3 text-2xl font-semibold tracking-tight text-white">
+          {problem.title}
+        </h1>
+      </div>
 
-        <div className="rounded-lg bg-slate-800 p-4">
-          <p className="font-semibold text-slate-200">Constraints</p>
-          <ul className="mt-2 list-disc pl-5 text-sm text-slate-300 space-y-1">
-            <li>2 ≤ nums.length ≤ 10⁴</li>
-            <li>-10⁹ ≤ nums[i] ≤ 10⁹</li>
-            <li>Exactly one valid answer exists.</li>
-          </ul>
-        </div>
+      <div className="min-h-0 flex-1 overflow-y-auto p-5 pr-3">
+        <div className="space-y-6 pr-2">
+          <section>
+            <h2 className="text-sm font-semibold uppercase tracking-wider text-slate-400">
+              Problem
+            </h2>
+            <p className="mt-3 whitespace-pre-line leading-7 text-slate-200">
+              {problem.description}
+            </p>
+          </section>
 
-        <div className="rounded-lg bg-slate-800 p-4">
-          <p className="font-semibold text-slate-200">Hint</p>
-          <p className="mt-2 text-sm text-slate-300">
-            Try solving it in O(n) time using a hash map instead of checking
-            every pair.
-          </p>
+          <section className="rounded-xl border border-slate-800 bg-slate-950/70 p-4">
+            <h2 className="text-sm font-semibold text-slate-100">Example</h2>
+            <pre className="mt-3 overflow-x-auto whitespace-pre-wrap font-mono text-sm leading-6 text-slate-300">
+{`Input\n${problem.exampleInput ?? "See the starter code for an example input."}\n\nOutput\n${problem.exampleOutput ?? "Output is not yet specified for this problem."}`}
+            </pre>
+          </section>
+
+          <section>
+            <h2 className="text-sm font-semibold uppercase tracking-wider text-slate-400">
+              Constraints
+            </h2>
+            <ul className="mt-3 list-disc space-y-2 pl-5 text-sm leading-6 text-slate-300">
+              <li>Write a correct solution for the provided input.</li>
+              <li>Consider time and space complexity before submitting.</li>
+              <li>Use the editor and test panel to validate your approach.</li>
+            </ul>
+          </section>
         </div>
       </div>
-    </div>
+    </section>
   );
 }
